@@ -1,4 +1,24 @@
 import os
+from google.genai import types
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description="(Over-)writes any file-type with the given content in a path relative to the working directory",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path of the file to be written",
+            ),
+            "content": types.Schema(
+                type=types.Type.STRING,
+                description="Contents of the file to be written"
+            ),
+        },
+        required=["file_path", "content"]
+    ),
+)
 
 def write_file(working_directory: str, file_path: str, content: str) -> str:
     try:

@@ -1,8 +1,9 @@
 import argparse
 import os
 from dotenv import load_dotenv
+from functions.call_function import available_functions
 from google.genai import Client, types
-
+from prompts import system_prompt
 
 def main() -> None: 
     parser = argparse.ArgumentParser(description = "Chatbot")
@@ -28,7 +29,12 @@ def main() -> None:
  
     response = client.models.generate_content(
             model = "gemini-2.5-flash",
-            contents = messages        
+            contents = messages,
+            config=types.GenerateContentConfig(
+                tools = [available_functions],
+                system_instruction = system_prompt,
+                temperature = 0
+                )
     )
     
     if not response.usage_metadata:
@@ -41,8 +47,12 @@ def main() -> None:
         print("Prompt tokens:", prompt_tokens)
         print("Response tokens:", response_tokens)
 
-    print("Response:")
-    print(response.text)
+    function_calls: list[str] | None = response.function_calls
+    if function_calls:
+        for function_call in function_calls:
+            print(f"Calling function: {function_call.name}({function_call.args})")
+    else:
+        print("Response:", response.text)
 
 if __name__ == "__main__":
     main()
